@@ -3,14 +3,25 @@ import { fetchAudioFile } from '../utils/fetch_audio_file.js';
 import { transcribeAudio } from '../utils/transcribe_audio.js';
 import { generateStructuredReport } from '../utils/generate_report.js';
 import { getCredentials } from '../utils/get_credentials.js';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 export const reportRouter = express.Router();
 
 reportRouter.post('/', async (req, res) => {
     const apiKey = req.headers['x-api-key'];
     
-    const { pool } = await getCredentials();
-    let client = await pool.connect();
+    let db;
+    try {
+        const { pool } = await getCredentials();
+        db = pool;
+    } catch (error) {
+        console.error('Error getting credentials:', error.message);
+        throw error;
+    }
+
+    const client = await db.connect();
     console.log("client connected");
     
     const apiKeyResult = await client.query('SELECT * FROM public."clients" WHERE api_key = $1', [apiKey]);

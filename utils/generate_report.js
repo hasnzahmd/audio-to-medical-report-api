@@ -39,6 +39,7 @@ const generateFromText = async ({ transcriptions, report_language: language, fie
             let totalPromptTokens = 0;
 
             if (service_name === 'anthropic') {
+                mergeConfig.modelName = ANTHROPIC_MODEL;
                 mergingModel = new ChatAnthropic({
                     ...mergeConfig,
                     callbacks: [
@@ -52,6 +53,7 @@ const generateFromText = async ({ transcriptions, report_language: language, fie
                     ]
                 });
 
+                generationConfig.modelName = ANTHROPIC_MODEL;
                 generationModel = new ChatAnthropic({
                     ...generationConfig,
                     callbacks: [
@@ -142,6 +144,7 @@ const generateFromText = async ({ transcriptions, report_language: language, fie
 export async function generateStructuredReport(data) {
     try {
         console.log('\n>>>>>> Generating JSON response <<<<<<');
+        const { client } = data;
         const response = await generateFromText(data);
         console.log('response: ', response);
 
@@ -160,6 +163,7 @@ export async function generateStructuredReport(data) {
         let structuredReport = JSON.parse(content);
         console.log('structured report:', structuredReport);
         console.log('\n>>>>>> Respone generated <<<<<<');
+        client.release();
         return structuredReport;
 
     } catch (error) {
